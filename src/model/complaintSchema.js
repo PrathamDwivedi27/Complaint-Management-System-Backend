@@ -49,7 +49,10 @@ const ComplaintSchema = new mongoose.Schema({
         enum: ["pending", "approved", "in-progress", "completed", "rejected"], 
         default: "pending" 
     },
-    rejectionReason: { type: String }, // If rejected, store reason
+    rejectionReason: { 
+        type: String ,
+        default:null
+    }, 
 }, { timestamps: true });
 
 const Complaint = mongoose.model("Complaint", ComplaintSchema);
