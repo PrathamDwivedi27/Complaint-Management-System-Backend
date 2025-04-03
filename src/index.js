@@ -3,6 +3,7 @@ import bodyParser from 'body-parser';
 import cors from 'cors';
 import { PORT } from './config/server-config.js';
 import { connectDB } from './config/db.js';
+import apiRoutes from './routes/index.js'
 
 const app=express();
 
@@ -17,6 +18,7 @@ app.use(cors());
 connectDB();
 
 //routes
+app.use("/api",apiRoutes);
 
 
 
