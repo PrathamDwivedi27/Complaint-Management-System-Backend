@@ -23,15 +23,28 @@ const OfficerSchema = new mongoose.Schema(
         type: String, 
         unique: true, 
         required: true 
-    }, // Unique government-issued ID
+    },
     category: { 
         type: String, 
-        required: true 
-    }, // Example: "Road", "Electricity", "Water"
+        required: true,
+        enum: [
+            "Municipal Officer",
+            "Sanitation Officer",
+            "Water Department Officer",
+            "Electricity Department Officer",
+            "Traffic Police",
+            "Police Officer",
+            "HR Officer",
+            "Legal Officer",
+            "Anti-Corruption Officer",
+            "Consumer Rights Officer",
+            "Telecom Officer",
+          ],
+    }, 
     assignedTasks: [{ 
         type: mongoose.Schema.Types.ObjectId, 
         ref: "Complaint" 
-    }], // Assigned complaints
+    }],
   },
   { timestamps: true }
 );

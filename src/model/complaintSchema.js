@@ -11,8 +11,24 @@ const ComplaintSchema = new mongoose.Schema({
     },
     category: { 
         type: String, 
-        required: true 
-    }, // Example: "Road", "Electricity"
+        required: true,
+        enum: [
+            "Road Damage",
+            "Water Leakage",
+            "Garbage Collection",
+            "Street Lights",
+            "Traffic Signals",
+            "Illegal Construction",
+            "Sewage Issues",
+            "Noise Pollution",
+            "Harassment",
+            "Salary Issues",
+            "Discrimination",
+            "Fraud",
+            "Product Defect",
+            "Internet & Telecom Issues"
+          ], 
+    },
     image:{
         type:String,
     },
