@@ -4,6 +4,9 @@ import validator from 'validator';
 import { JWT_SECRET } from '../config/server-config.js';
 import User from '../model/userSchema.js';
 import { ADMIN_SECRET } from '../config/server-config.js';
+import UserService from '../service/user-service.js';
+
+const userService=new UserService();
 
 const loginUser = async (req, res) => {
   const { email, password } = req.body;
@@ -43,7 +46,7 @@ const loginUser = async (req, res) => {
 
 const createToken = (id,role) => {
   console.log("role",role);
-  return jwt.sign({ id:id,role:role }, JWT_SECRET, { expiresIn: '15d' });
+  return jwt.sign({ id:id, role:role }, JWT_SECRET, { expiresIn: '15d' });
 };
 
 const registerUser = async (req, res) => {
@@ -107,7 +110,76 @@ const registerUser = async (req, res) => {
   }
 };
 
+const updateUser = async (req, res) => {
+    try {
+      const user = await userService.updateUser(req.params.id, req.body,req.user);
+      return res.status(202).json({
+        data: user,
+        success: true,
+        err: {},
+        message: 'Successfully updated the user info',
+      });
+    } catch (error) {
+      console.log(error);
+      res.status(500).json({
+        message: 'Internal Server error',
+        success: false,
+        err: error.message,
+        data: {},
+      });
+    }
+  };
+  
+  const getUser = async (req, res) => {
+    try {
+      const { id } = req.params;
+      const user = await userService.getUser(req.user, id);
+      console.log(user);
+      console.log(req.user);
+      return res.status(202).json({
+        data: user,
+        success: true,
+        err: {},
+        message: 'Successfully fetched the user info',
+      });
+    } catch (error) {
+      console.log(error);
+      res.status(500).json({
+        message: 'Internal Server error',
+        success: false,
+        err: error.message,
+        data: {},
+      });
+    }
+  };
+  
+  const deleteUser = async (req, res) => {
+    try {
+      const { id } = req.params;
+      const user = await userService.deleteUser(id,req.user);
+    //   console.log(user);
+    //   console.log(req.user);
+      return res.status(202).json({
+        data: user,
+        success: true,
+        err: {},
+        message: 'Successfully deleted the user info',
+      });
+    } catch (error) {
+      console.log(error);
+      res.status(500).json({
+        message: 'Internal Server error',
+        success: false,
+        err: error.message,
+        data: {},
+      });
+    }
+  };
+
 export {
     loginUser,
-    registerUser
+    registerUser,
+    updateUser,
+    getUser,
+    deleteUser
 }
