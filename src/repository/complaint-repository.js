@@ -84,6 +84,17 @@ class ComplaintRepository{
             throw error;
         }
     }
+
+    async getComplaintByStatus(status){
+        try {
+            const complaint=await this.complaintModel.find(status);
+            return complaint;
+        } catch (error) {
+            console.log('Something went wrong in repo layer while getting complaint',error);
+            throw error;
+            
+        }
+    }
 }
 
 export default ComplaintRepository;

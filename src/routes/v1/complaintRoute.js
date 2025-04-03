@@ -11,6 +11,7 @@ router.get('/my-complaints',getComplaintByUser);
 router.delete('/complaint/:id',deleteComplaint);
 router.get('/complaints',getComplaint);
 router.get('/filtered-complaints',getComplaints);
+router.get('/complaintByStatus',getComplaints);    
 
 
 

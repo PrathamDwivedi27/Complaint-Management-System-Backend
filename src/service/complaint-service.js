@@ -88,6 +88,19 @@ class ComplaintService{
             throw error;
         }
     }
+
+    async getComplaintByStatus(status){
+        try{
+            const complaint = await this.complaintRepository.getComplaintByStatus(status);
+            return complaint;
+        }
+        catch(error){
+            console.log('Something went wrong in service layer while creating complaint',error);
+            throw error;
+        }
+    }
+
+    
 }
 
 

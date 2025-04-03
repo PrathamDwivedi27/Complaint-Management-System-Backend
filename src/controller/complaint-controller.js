@@ -170,6 +170,26 @@ const getComplaints = async (req, res) => {
     }
   };
 
+const getComplaintByStatus=async(req,res)=>{
+    try {
+        const filters = {...req.query};
+        console.log(filters);
+        const complaints = await complaintService.getComplaintByFilter(filters);
+    
+        res.status(200).json({
+          success: true,
+          count: complaints.length,
+          data: complaints,
+        });
+      } catch (error) {
+        console.error(error);
+        res.status(500).json({
+          success: false,
+          message: "Internal Server Error",
+        });
+      }
+}
+
 
 export {
     createComplaint,
@@ -179,6 +199,7 @@ export {
     deleteComplaint,
     getComplaintByUser,
     getComplaints,
+    getComplaintByStatus
 
 
 }
