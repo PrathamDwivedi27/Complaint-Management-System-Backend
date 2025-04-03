@@ -3,6 +3,10 @@ import jwt from 'jsonwebtoken';
 import validator from 'validator';
 import { JWT_SECRET } from '../config/server-config.js';
 import Officer from '../model/officerSchema.js';
+import OfficerService from '../service/officer-verification-service.js';
+import OfficerVerification from '../model/officerVerificationSchema.js';
+
+const officerService=new OfficerService();
 
 const loginUser = async (req, res) => {
   const { email, password } = req.body;
@@ -45,13 +49,18 @@ const createToken = (id) => {
 };
 
 const registerUser = async (req, res) => {
-  const { name, email, password,category, badgeId,phone } = req.body;
+  const { name, email, password,category, badgeId, phone } = req.body;
   try {
-    const exists = await userModel.findOne({ email });
+    const exists = await Officer.findOne({ email });
+
+    const verifiedOfficer = await OfficerVerification.findOne({email, badgeId });
+        if (!verifiedOfficer) {
+            return res.status(400).json({ message: "Officer verification failed. Badge ID not recognized." });
+        }
 
     if (exists) {
       return res.status(200).json({
-        message: 'User already exists',
+        message: 'Officer already exists',
         data: exists,
         success: true,
       });
@@ -68,7 +77,7 @@ const registerUser = async (req, res) => {
     const SALT = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, SALT);
 
-    const newUser = new userModel({
+    const newOfficer = new Officer({
       name: name,
       email: email,
       password: hashedPassword,
@@ -76,18 +85,17 @@ const registerUser = async (req, res) => {
       badgeId: badgeId,
       category: category,
     });
-    console.log(newUser);
 
-    const user = await newUser.save();
+    const officer = await newOfficer.save();
 
-    const token = createToken(user._id);
-    console.log("token",token);
+    const token = createToken(officer._id);
+    // console.log("token",token);
     res.status(202).json({
       message: 'Verified token',
       success: true,
       token: token,
-      userId: user._id,
-      data: user,
+      userId: officer._id,
+      data: officer,
     });
   } catch (error) {
     console.log(error);
@@ -98,9 +106,29 @@ const registerUser = async (req, res) => {
   }
 };
 
+const createOfficerVerification=async (req,res)=>{
+    try {
+        const data=await officerService.createOfficerVerification(req.body);
+        return res.status(202).json({
+            message:'Successfully created officer verification badge',
+            data:data,
+            success:true,
+            err:{}
+        })
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({
+            message: 'Internal Server error',
+            success: false,
+            err: error.message,
+            data: {},
+        });
+    }
+}
+
 
 export { 
     loginUser, 
     registerUser, 
-
+    createOfficerVerification,
 };
