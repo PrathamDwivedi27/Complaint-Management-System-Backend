@@ -126,9 +126,50 @@ const createOfficerVerification=async (req,res)=>{
     }
 }
 
+const listAllOfficers = async (req, res) => {
+  try {
+    const category = req.query.category?.trim(); // Extract category query
+
+    let filter = {}; // Default: fetch all officers
+
+    if (category && typeof category === "string") {
+      filter = { category: { $regex: new RegExp(`\\b${category}`, "i") } };
+    }
+
+    const officers = await Officer.find(filter);
+
+    if (!officers.length) {
+      return res.status(404).json({
+        message: "No officers found",
+        success: false,
+        data: [],
+      });
+    }
+
+    return res.status(200).json({
+      message: "Successfully fetched officers",
+      success: true,
+      data: officers,
+    });
+  } catch (error) {
+    console.error("Error fetching officers:", error);
+    res.status(500).json({
+      message: "Internal Server Error",
+      success: false,
+      err: error.message,
+      data: [],
+    });
+  }
+};
+
+
+
+
 
 export { 
     loginUser, 
     registerUser, 
     createOfficerVerification,
+    listAllOfficers,
+
 };
