@@ -1,26 +1,62 @@
 import ComplaintService from "../service/complaint-service.js";
-
+import cloudinary from 'cloudinary';
 
 const complaintService=new ComplaintService();
 
 
-const createComplaint=async (req,res)=>{
-    try {
-       const complaint=await complaintService.createComplaint(req.body);
-       return res.status(201).json({
-            success:true,
-            message:'Complaint created successfully',
-            data:complaint,
-            error:{}
-        }) 
-    } catch (error) {
-        console.log('Something went wrong in controller layer while creating complaint',error);
-        return res.status(500).json({
-            success:false,
-            message:'Something went wrong in controller layer while creating complaint',
-            error:error.message
-        })
+const streamUpload = async (fileBuffer) => {
+  return new Promise((resolve, reject) => {
+    const uploadStream = cloudinary.v2.uploader.upload_stream(
+      {
+        resource_type: "image",
+        folder: "complaints",
+      },
+      (error, result) => {
+        if (error) reject(error);
+        else resolve(result);
+      }
+    );
+
+    // Push the buffer to the Cloudinary stream
+    uploadStream.end(fileBuffer);
+  });
+};
+
+const createComplaint = async (req, res) => {
+  try {
+    let imageUrl = "";
+
+    if (req.file) {
+      const uploadResult = await streamUpload(req.file.buffer);
+      imageUrl = uploadResult.secure_url;
+    } else {
+      console.log("No file provided");
     }
+
+    const complaintData = {
+      title: req.body.title,
+      description: req.body.description,
+      location: req.body.location,
+      category: req.body.category,
+      citizen: req.body.citizen,
+      image: imageUrl,
+    };
+
+    const complaint = await complaintService.createComplaint(complaintData);
+
+    return res.status(201).json({
+      success: true,
+      message: "Complaint created successfully",
+      data: complaint,
+    });
+  } catch (error) {
+    console.error("Error creating complaint:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Something went wrong while creating complaint",
+      error: error.message,
+    });
+  }
 };
 
 const updateComplaint=async (req,res)=>{
@@ -190,6 +226,31 @@ const getComplaintByStatus=async(req,res)=>{
       }
 }
 
+const updateComplaintStatusByOfficer = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { status, remarks } = req.body;
+        const officerId = req.user.id; 
+
+        // Call the service function
+        const updatedComplaint = await complaintService.updateComplaintStatusByOfficer(id, officerId, status, remarks);
+
+        
+
+        return res.status(200).json({
+            message: "Complaint status updated successfully",
+            success: true,
+            data: updatedComplaint,
+        });
+    } catch (error) {
+        console.error("Error updating status:", error);
+        return res.status(400).json({
+            message: error.message,
+            success: false,
+        });
+    }
+};
+
 
 export {
     createComplaint,
@@ -199,7 +260,8 @@ export {
     deleteComplaint,
     getComplaintByUser,
     getComplaints,
-    getComplaintByStatus
+    getComplaintByStatus,
+    updateComplaintStatusByOfficer
 
 
 }

@@ -8,7 +8,9 @@ class ComplaintService{
 
     async createComplaint(data){
         try{
+            console.log('Creating complaint in service layer',data);
             const complaint = await this.complaintRepository.createComplaint(data);
+            console.log('Complaint saved in service layer',complaint);
             return complaint;
         }
         catch(error){
@@ -97,6 +99,39 @@ class ComplaintService{
         catch(error){
             console.log('Something went wrong in service layer while creating complaint',error);
             throw error;
+        }
+    }
+
+    async updateComplaintStatusByOfficer(id, officerId, status, remarks){
+        try {
+            if (!["In Progress", "Completed"].includes(status)) {
+                throw new Error("Invalid status");
+            }
+
+            const complaint = await this.complaintRepository.getComplaintById(id);
+            if (!complaint) {
+                throw new Error("Complaint not found");
+            }
+
+            // Check if officer is assigned to this complaint
+            if (complaint.officer.toString() !== officerId) {
+                throw new Error("Unauthorized");
+            }
+
+            // Update status and remarks
+            complaint.status = status;
+            if (remarks) {
+                complaint.remarks = remarks;
+            }
+
+            complaint.updatedAt = new Date();
+            await complaint.save();
+
+            return complaint;
+        } catch (error) {
+            console.log('Something went wrong in service layer while updating complaint status',error);
+            throw error;
+            
         }
     }
 

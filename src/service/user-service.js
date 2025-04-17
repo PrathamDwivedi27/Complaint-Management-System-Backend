@@ -8,7 +8,7 @@ class UserService {
   async updateUser(id, data,currentUser) {
     try {
       if (!checkUserUpdateAccess(currentUser.id, id, currentUser.role)) {
-            throw new Error('Access denied: You can only update your own data .');
+        throw new Error('Access denied: You can only update your own data.');
       }
       const user = await this.userRepository.updateUser(id, data);
       return user;

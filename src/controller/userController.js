@@ -112,7 +112,7 @@ const registerUser = async (req, res) => {
 
 const updateUser = async (req, res) => {
     try {
-      const user = await userService.updateUser(req.params.id, req.body,req.user);
+      const user = await userService.updateUser(req.params.id, req.body, req.user);
       return res.status(202).json({
         data: user,
         success: true,

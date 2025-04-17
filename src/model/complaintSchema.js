@@ -22,10 +22,8 @@ const ComplaintSchema = new mongoose.Schema({
             "Sewage Issues",
             "Noise Pollution",
             "Harassment",
-            "Salary Issues",
             "Discrimination",
             "Fraud",
-            "Product Defect",
             "Internet & Telecom Issues"
           ], 
     },
@@ -38,7 +36,8 @@ const ComplaintSchema = new mongoose.Schema({
     },
     citizen: { 
         type: mongoose.Schema.Types.ObjectId, 
-        ref: "User", required: true 
+        ref: "User", 
+        required: true 
     }, // Complaint creator
     officer: { 
         type: mongoose.Schema.Types.ObjectId, 
@@ -53,6 +52,10 @@ const ComplaintSchema = new mongoose.Schema({
         type: String ,
         default:null
     }, 
+    remarks:{
+        type:String,
+        default:null
+    }       // Officer's remarks (if any)
 }, { timestamps: true });
 
 const Complaint = mongoose.model("Complaint", ComplaintSchema);
