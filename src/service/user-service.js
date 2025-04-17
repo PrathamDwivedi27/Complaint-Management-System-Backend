@@ -5,15 +5,12 @@ class UserService {
     this.userRepository = new UserRepository();
   }
 
-  async updateUser(id, data,currentUser) {
+  async updateUser(id, data) {
     try {
-      if (!checkUserUpdateAccess(currentUser.id, id, currentUser.role)) {
-        throw new Error('Access denied: You can only update your own data.');
-      }
-      const user = await this.userRepository.updateUser(id, data);
-      return user;
+      const updatedUser = await this.userRepository.updateUser(id, data);
+      return updatedUser;
     } catch (error) {
-      console.log('Something went wrong in user-service ', error);
+      console.log('Something went wrong in user-service', error);
       throw error;
     }
   }

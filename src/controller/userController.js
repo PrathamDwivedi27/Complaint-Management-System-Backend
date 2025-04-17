@@ -111,24 +111,37 @@ const registerUser = async (req, res) => {
 };
 
 const updateUser = async (req, res) => {
-    try {
-      const user = await userService.updateUser(req.params.id, req.body, req.user);
-      return res.status(202).json({
-        data: user,
-        success: true,
-        err: {},
-        message: 'Successfully updated the user info',
-      });
-    } catch (error) {
-      console.log(error);
-      res.status(500).json({
-        message: 'Internal Server error',
-        success: false,
-        err: error.message,
-        data: {},
-      });
+  try {
+    const authHeader = req.headers.authorization;
+
+    if (!authHeader) {
+      return res.status(401).json({ success: false, message: 'No token provided' });
     }
-  };
+
+    const token = authHeader.split(' ')[1]; // Bearer <token>
+
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const userId = decoded.id;
+    const userRole = decoded.role;
+
+    const user = await userService.updateUser(userId, req.body, { id: userId, role: userRole });
+
+    return res.status(202).json({
+      data: user,
+      success: true,
+      err: {},
+      message: 'Successfully updated the user info',
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({
+      message: 'Internal Server Error',
+      success: false,
+      err: error.message,
+      data: {},
+    });
+  }
+};
   
   const getUser = async (req, res) => {
     try {
