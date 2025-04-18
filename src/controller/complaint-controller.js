@@ -1,5 +1,7 @@
 import ComplaintService from "../service/complaint-service.js";
 import cloudinary from 'cloudinary';
+import jwt from 'jsonwebtoken';
+import { JWT_SECRET } from "../config/server-config.js";
 
 const complaintService=new ComplaintService();
 
@@ -33,12 +35,16 @@ const createComplaint = async (req, res) => {
       console.log("No file provided");
     }
 
+    const token = req.headers.authorization.split(" ")[1];
+    const decoded = jwt.verify(token, JWT_SECRET);
+    const userId = decoded.id; // Extract user ID from the token
+
     const complaintData = {
       title: req.body.title,
       description: req.body.description,
       location: req.body.location,
       category: req.body.category,
-      citizen: req.body.citizen,
+      citizen: userId,
       image: imageUrl,
     };
 
@@ -168,7 +174,18 @@ const deleteComplaint=async (req,res)=>{
 
 const getComplaintByUser=async (req,res)=>{
     try {
-        const {userId}=req.body;
+      const authorizationHeader = req.headers.authorization;
+      if (!authorizationHeader) {
+        return res.status(401).json({
+          success: false,
+          message: "Authorization header is missing",
+          error: {},
+        });
+      }
+      const token = authorizationHeader.split(" ")[1];
+      const decoded = jwt.verify(token, JWT_SECRET);
+      const userId = decoded.id; // Extract user ID from the token
+      console.log(userId);
         const complaints=await complaintService.getComplaintByUser(userId);
         return res.status(200).json({
             success:true,
@@ -228,12 +245,55 @@ const getComplaintByStatus=async(req,res)=>{
 
 const updateComplaintStatusByOfficer = async (req, res) => {
     try {
-        const { id } = req.params;
+        const { id } = req.body;
         const { status, remarks } = req.body;
-        const officerId = req.user.id; 
+
+        console.log("req.body is ", req.body);
+        
+        const authorization = req.headers.authorization;
+        console.log("authorization is ", authorization);
+        
+
+        if (!authorization) {
+            return res.status(401).json({
+                message: "Unauthorized",
+                success: false,
+                data: [],
+            });
+        }
+        
+        const token = authorization.split(" ")[1];
+        console.log("token is" ,token);
+        if (!token) {
+            return res.status(401).json({
+                message: "No token provided",
+                success: false,
+                data: [],
+            });
+        }
+        const decoded = jwt.verify(token, JWT_SECRET);
+        console.log("decoded is ", decoded);
+        if (!decoded) {
+            return res.status(401).json({
+                message: "Invalid token",
+                success: false,
+                data: [],
+            });
+        }
+        const officerId = decoded.id; // Extract officer ID from the token
+        console.log("officer id is", officerId);
 
         // Call the service function
+        console.log("calling the service function");
         const updatedComplaint = await complaintService.updateComplaintStatusByOfficer(id, officerId, status, remarks);
+        console.log("updated complaint is " ,updatedComplaint);
+        if (!updatedComplaint) {
+            return res.status(404).json({
+                message: "Complaint not found",
+                success: false,
+                data: [],
+            });
+        }
 
         
 

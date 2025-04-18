@@ -29,6 +29,7 @@ const ComplaintSchema = new mongoose.Schema({
     },
     image:{
         type:String,
+        default:null
     },
     location: { 
         type: String, 
@@ -53,8 +54,8 @@ const ComplaintSchema = new mongoose.Schema({
         default:null
     }, 
     remarks:{
-        type:String,
-        default:null
+        type:[String],
+        default:[]
     }       // Officer's remarks (if any)
 }, { timestamps: true });
 

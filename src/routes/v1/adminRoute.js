@@ -4,7 +4,7 @@ import { approveComplaint, rejectComplaint } from '../../controller/admin-contro
 
 const router=express.Router();
 
-router.post('/approve-complaint/:id',approveComplaint);
-router.post('/reject-complaint/:id',rejectComplaint);
+router.post('/approve-complaint',approveComplaint);
+router.post('/reject-complaint',rejectComplaint);
 
 export default router;

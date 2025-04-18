@@ -5,6 +5,7 @@ import { JWT_SECRET } from '../config/server-config.js';
 import Officer from '../model/officerSchema.js';
 import OfficerService from '../service/officer-verification-service.js';
 import OfficerVerification from '../model/officerVerificationSchema.js';
+import Complaint from '../model/complaintSchema.js';
 
 const officerService=new OfficerService();
 
@@ -162,6 +163,49 @@ const listAllOfficers = async (req, res) => {
   }
 };
 
+const listOfficerComplaints = async (req, res) => {
+  try {
+    const authorization = req.headers.authorization;
+    if (!authorization) {
+      return res.status(401).json({
+        message: "Unauthorized",
+        success: false,
+        data: [],
+      });
+    }
+    
+    const token = authorization.split(" ")[1];
+    const decoded = jwt.verify(token, JWT_SECRET);
+    const officerId = decoded.id; // Extract officer ID from the token
+    console.log(officerId);
+
+    const complaints = await Complaint.find({ officer: officerId });
+
+    if (!complaints.length) {
+      return res.status(404).json({
+        message: "No complaints found for this officer",
+        success: false,
+        data: [],
+      });
+    }
+
+    return res.status(200).json({
+      message: "Successfully fetched complaints",
+      success: true,
+      data: complaints,
+    });
+  } catch (error) {
+    console.error("Error fetching officer complaints:", error);
+    res.status(500).json({
+      message: "Internal Server Error",
+      success: false,
+      err: error.message,
+      data: [],
+    });
+  }
+} 
+
+
 
 
 
@@ -171,5 +215,6 @@ export {
     registerUser, 
     createOfficerVerification,
     listAllOfficers,
+    listOfficerComplaints
 
 };

@@ -78,7 +78,7 @@ class ComplaintService{
         try{
             let filter = {};
 
-            if (filterData.userId) filter.userId = filterData.userId;
+            if (filterData.status) filter.status = filterData.status;
             if (filterData.location) filter.location = filterData.location;
             if (filterData.category) filter.category = filterData.category;
 
@@ -104,14 +104,19 @@ class ComplaintService{
 
     async updateComplaintStatusByOfficer(id, officerId, status, remarks){
         try {
-            if (!["In Progress", "Completed"].includes(status)) {
+            console.log('Updating complaint status in service layer', { id, officerId, status, remarks });
+            if (!["in-progress", "completed"].includes(status)) {
                 throw new Error("Invalid status");
             }
 
             const complaint = await this.complaintRepository.getComplaintById(id);
+            console.log('Complaint fetched in service layer', complaint);
             if (!complaint) {
                 throw new Error("Complaint not found");
             }
+
+            console.log("complaint.officer is ", complaint.officer);
+            console.log("officerId is ", officerId);
 
             // Check if officer is assigned to this complaint
             if (complaint.officer.toString() !== officerId) {
@@ -121,7 +126,7 @@ class ComplaintService{
             // Update status and remarks
             complaint.status = status;
             if (remarks) {
-                complaint.remarks = remarks;
+                complaint.remarks.push(remarks);
             }
 
             complaint.updatedAt = new Date();

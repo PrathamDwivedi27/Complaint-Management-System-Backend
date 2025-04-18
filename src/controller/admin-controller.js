@@ -5,8 +5,10 @@ import nodemailer from "nodemailer";
 
 const approveComplaint = async (req, res) => {
     try {
-        const { id } = req.params;
+        const { id } = req.body;
         const { officerId } = req.body;
+        console.log(id, officerId);
+
 
         // 1️⃣ Find Complaint
         const complaint = await Complaint.findById(id);
@@ -119,8 +121,8 @@ const approveComplaint = async (req, res) => {
 
 const rejectComplaint = async (req, res) => {
     try {
-        const { id } = req.params;
-        const { rejectionReason } = req.body;
+        const { id } = req.body;
+        const { rejectionReason } = req.body || "Unspecified";
 
         const complaint = await Complaint.findById(id).populate("citizen");
         console.log(complaint);
