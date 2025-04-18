@@ -3,6 +3,9 @@ import cloudinary from 'cloudinary';
 import jwt from 'jsonwebtoken';
 import { JWT_SECRET } from "../config/server-config.js";
 import Complaint from "../model/complaintSchema.js";
+import nodemailer from 'nodemailer';
+import User from "../model/userSchema.js";
+import Officer from "../model/officerSchema.js";
 
 const complaintService=new ComplaintService();
 
@@ -287,6 +290,7 @@ const updateComplaintStatusByOfficer = async (req, res) => {
         // Call the service function
         console.log("calling the service function");
         const updatedComplaint = await complaintService.updateComplaintStatusByOfficer(id, officerId, status, remarks);
+
         console.log("updated complaint is " ,updatedComplaint);
         if (!updatedComplaint) {
             return res.status(404).json({
@@ -295,8 +299,60 @@ const updateComplaintStatusByOfficer = async (req, res) => {
                 data: [],
             });
         }
-
+        const user = await User.findById(updatedComplaint.citizen);
+        const officer=await Officer.findById(officerId);
+        console.log("user is ", user);
+        const citizenEmail = user.email;
+        const officerName = officer.name; // Ensure officerName is in the updated complaint or fetch it if needed
+        const department = officer.category; // Ensure department is in the updated complaint or fetch it if needed
+        const officerPhone = officer.phone; 
         
+        if (status === 'completed') {
+          // Create a nodemailer transporter
+          const transporter = nodemailer.createTransport({
+              service: 'gmail',
+              auth: {
+                  user: process.env.EMAIL_USER, // Use your Gmail address
+                  pass: process.env.EMAIL_PASS, // Use your Gmail password (consider using App Passwords if 2FA is enabled)
+              },
+          });
+
+          // Email message options
+          const mailOptions = {
+              from: process.env.EMAIL_USER, // Sender address
+              to: citizenEmail, // Citizen's email address
+              subject: 'Complaint Resolved: Status Updated to Completed',
+              html: `
+                  <html>
+                      <body style="font-family: Arial, sans-serif; background-color: #f4f4f4; padding: 20px;">
+                          <div style="background-color: #32CD32; padding: 20px; color: white; text-align: center;">
+                              <h2>Complaint Resolved</h2>
+                          </div>
+                          <div style="padding: 20px; background-color: white; border-radius: 5px;">
+                              <p>Your complaint has been successfully resolved. Here are the details:</p>
+                              <p><strong>Status:</strong> Completed</p>
+                              <p><strong>Officer Name:</strong> ${officerName}</p>
+                              <p><strong>Department:</strong> ${department}</p>
+                              <p><strong>Officer Phone:</strong> ${officerPhone}</p>
+                              <p><strong>Remarks:</strong> ${remarks}</p>
+                          </div>
+                          <div style="text-align: center; padding-top: 20px; color: #777;">
+                              <p>Thank you for your patience!</p>
+                          </div>
+                      </body>
+                  </html>
+              `, // HTML content of the email
+          };
+
+          // Send the email
+          transporter.sendMail(mailOptions, (error, info) => {
+              if (error) {
+                  console.log("Error sending email:", error);
+              } else {
+                  console.log("Email sent: " + info.response);
+              }
+          });
+      }
 
         return res.status(200).json({
             message: "Complaint status updated successfully",

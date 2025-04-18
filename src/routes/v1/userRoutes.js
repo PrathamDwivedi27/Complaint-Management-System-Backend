@@ -77,6 +77,24 @@ router.get('/get-officer-by-token', async (req, res) => {
 router.get('/user/:id',authMiddleware,getUser);
 router.delete('/user/:id',authMiddleware,deleteUser);
 router.patch('/user/update',authMiddleware,updateUser);
+router.get('/users',authMiddleware,async (req,res)=>{
+    try {
+        const users = await User.find({ role: 'citizen' }).select('-password');
+        res.status(200).json({
+            message:"Successfully fetched all users",
+            success:true,
+            data:users
+        })
+    } catch (error) {
+        console.log(error)
+        res.status(500).json({
+            message:"Internal Server Error",
+            success:false,
+            err:error.message,
+            data:[]
+        })
+    }
+})
 
 
 
