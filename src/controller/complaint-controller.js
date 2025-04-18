@@ -2,6 +2,7 @@ import ComplaintService from "../service/complaint-service.js";
 import cloudinary from 'cloudinary';
 import jwt from 'jsonwebtoken';
 import { JWT_SECRET } from "../config/server-config.js";
+import Complaint from "../model/complaintSchema.js";
 
 const complaintService=new ComplaintService();
 
@@ -311,6 +312,37 @@ const updateComplaintStatusByOfficer = async (req, res) => {
     }
 };
 
+const getComplaintStatusCounts = async (req, res) => {
+  try {
+    const counts = await Complaint.aggregate([
+      {
+        $group: {
+          _id: "$status",
+          count: { $sum: 1 }
+        }
+      }
+    ]);
+
+    // Convert to object with keys like { pending: 10, completed: 5 }
+    const result = counts.reduce((acc, curr) => {
+      acc[curr._id] = curr.count;
+      return acc;
+    }, {});
+
+    // Optionally ensure all statuses are present (even if count is 0)
+    const allStatuses = ['pending', 'in-progress', 'completed','rejected'];
+    allStatuses.forEach(status => {
+      if (!result[status]) result[status] = 0;
+    });
+    console.log("result is ", result);
+
+    res.status(200).json({ success: true, data: result });
+  } catch (err) {
+    console.error("Error fetching status counts:", err);
+    res.status(500).json({ success: false, message: "Server Error" });
+  }
+};
+
 
 export {
     createComplaint,
@@ -321,7 +353,8 @@ export {
     getComplaintByUser,
     getComplaints,
     getComplaintByStatus,
-    updateComplaintStatusByOfficer
+    updateComplaintStatusByOfficer,
+    getComplaintStatusCounts
 
 
 }
