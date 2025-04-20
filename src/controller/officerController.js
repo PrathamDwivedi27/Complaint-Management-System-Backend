@@ -90,7 +90,7 @@ const registerUser = async (req, res) => {
     const officer = await newOfficer.save();
 
     const token = createToken(officer._id);
-    // console.log("token",token);
+    console.log("token",token);
     res.status(202).json({
       message: 'Verified token',
       success: true,
